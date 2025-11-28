@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Spotify Player Modern</title>
+<style>
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #121212;
+    color: #fff;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  h1 {
+    text-align: center;
+    margin: 20px 0;
+    color: #1DB954;
+    font-weight: 700;
+    font-size: 2em;
+  }
+
+  #searchSection {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    padding: 0 10px;
+  }
+
+  #searchInput {
+    width: 300px;
+    padding: 10px 15px;
+    border-radius: 50px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+  }
+
+  #searchBtn {
+    background: #1DB954;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    margin-left: 10px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  #searchBtn:hover { background: #1ed760; }
+
+  #results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    list-style: none;
+    padding: 0 10px;
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+
+  #results li {
+    background: #181818;
+    padding: 15px;
+    border-radius: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: 0.3s;
+    gap: 15px;
+  }
+
+  #results li:hover {
+    background: #282828;
+    transform: translateY(-2px);
+  }
+
+  #results img {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+  }
+
+  #results .track-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  #results .track-name {
+    font-weight: 700;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+  }
+
+  #results .track-artists {
+    font-size: 0.9em;
+    color: #b3b3b3;
+  }
+
+  #playerControls {
+    background: rgba(30,30,30,0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 15px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+  }
+
+  #logoPlayer {
+    font-weight: 700;
+    color: #1DB954;
+    margin-bottom: 5px;
+    font-size: 1em;
+  }
+
+  #progressContainer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #currentTime, #duration {
+    font-size: 12px;
+    width: 40px;
+    text-align: center;
+  }
+
+  #progressBar {
+    flex-grow: 1;
+  }
+
+  #progressBar input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+  }
+
+  #controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  #controls button {
+    background: #1DB954;
+    border: none;
+    color: #fff;
+    padding: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #controls button:hover { background: #1ed760; }
+
+  #repeatBtn.active {
+    background: #1ed760;
+  }
+
+  #volumeControl {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  #volumeIcon {
+    font-size: 20px;
+  }
+
+  #volumeSlider {
+    width: 120px;
+    cursor: pointer;
+  }
+</style>
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+</head>
+<body>
+
+<h1>🎵 Spotify Player</h1>
+
+<div id="searchSection">
+  <input type="text" id="searchInput" placeholder="Titre, artiste…">
+  <button id="searchBtn">Rechercher</button>
+</div>
+
+<ul id="results"></ul>
+
+<div id="playerControls">
+  <div id="logoPlayer">digipair.ai</div>
+
+  <div id="progressContainer">
+    <span id="currentTime">0:00</span>
+    <div id="progressBar">
+      <input type="range" min="0" max="100" value="0" id="progressSlider">
+    </div>
+    <span id="duration">0:00</span>
+  </div>
+
+  <div id="controls">
+    <button id="prevBtn">⏮</button>
+    <button id="playPauseBtn">▶️</button>
+    <button id="nextBtn">⏭</button>
+    <button id="repeatBtn">🔁</button>
+
+    <div id="volumeControl">
+      <span id="volumeIcon">🔊</span>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5">
+    </div>
+  </div>
+</div>
+
+<script>
+let TOKEN = "BQBB0dIsWdMR7mu68i37yQrMjnCG13_vfvbJG5CnYKa3LSHy3yAg9aHsT17L2DN7EwE8mA7zKqRVkFKn-Vzt43OFVYQNjyynXE0XpNNj_tNGiutkt0x1jeLz0UTn5oa_-gaiZeRWFcavgavhvAzFrrSWKS4-dQWiBxrJI0DgN2MTEkSTKVVORQ_5zu6loxPD-w1-9UDkkTnd6-YO9m18rGf1xwUEO0ntQ9KUQ-CZuZglZJw"; // Remplace par ton token valide
+
+let player;
+let deviceId;
+let isPaused = true;
+let currentTrackIndex = -1;
+let lastSearchTracks = [];
+let repeat = false;
+
+// Spotify Web Playback SDK
+window.onSpotifyWebPlaybackSDKReady = () => {
+  player = new Spotify.Player({
+    name: "Web Player Site",
+    getOAuthToken: cb => { cb(TOKEN); },
+    volume: 0.5
+  });
+
+  player.addListener('ready', ({ device_id }) => { deviceId = device_id; });
+  player.addListener('player_state_changed', state => {
+    if (!state) return;
+    isPaused = state.paused;
+    document.getElementById('playPauseBtn').textContent = isPaused ? "▶️" : "⏸";
+  });
+
+  player.connect();
+};
+
+// Format millisecondes → mm:ss
+function formatTime(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+// Rechercher des pistes
+async function searchTracks(query) {
+  const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`,
+    { headers: { Authorization: `Bearer ${TOKEN}` } });
+  const data = await res.json();
+  return data.tracks.items;
+}
+
+// Jouer une piste
+async function playTrack(index) {
+  if(index < 0 || index >= lastSearchTracks.length) return;
+  currentTrackIndex = index;
+  const track = lastSearchTracks[index];
+
+  if(track.preview_url) {
+    const audioEl = document.getElementById("playerAudio") || (() => {
+      const el = document.createElement("audio");
+      el.id = "playerAudio";
+      el.controls = false;
+      document.body.appendChild(el);
+      return el;
+    })();
+    audioEl.src = track.preview_url;
+    audioEl.play();
+  } else {
+    if(!deviceId) return alert("Le lecteur Spotify n'est pas prêt !");
+    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ uris: [track.uri] }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+    });
+    isPaused = false;
+    document.getElementById('playPauseBtn').textContent = "⏸";
+  }
+}
+
+// Synchronisation barre de temps et navigation
+const progressSlider = document.getElementById("progressSlider");
+let isSliding = false;
+
+progressSlider.addEventListener("mousedown", () => { isSliding = true; });
+progressSlider.addEventListener("touchstart", () => { isSliding = true; });
+
+progressSlider.addEventListener("mouseup", async () => {
+  isSliding = false;
+  await seekTo(progressSlider.value);
+});
+progressSlider.addEventListener("touchend", async () => {
+  isSliding = false;
+  await seekTo(progressSlider.value);
+});
+
+async function seekTo(valueMs) {
+  const audioEl = document.getElementById("playerAudio");
+  if(audioEl) {
+    audioEl.currentTime = valueMs / 1000;
+  } else if (player) {
+    await player.seek(valueMs);
+  }
+}
+
+// Mise à jour continue de la barre
+function updateProgress() {
+  const audioEl = document.getElementById("playerAudio");
+  const slider = document.getElementById('progressSlider');
+
+  if(!isSliding) {
+    if(audioEl && !audioEl.paused) {
+      slider.max = audioEl.duration * 1000;
+      slider.value = audioEl.currentTime * 1000;
+      document.getElementById('currentTime').textContent = formatTime(audioEl.currentTime * 1000);
+      document.getElementById('duration').textContent = formatTime(audioEl.duration * 1000);
+    } else if (player) {
+      player.getCurrentState().then(state => {
+        if(!state) return;
+        const durationMs = state.duration;
+        const positionMs = state.position;
+        slider.max = durationMs;
+        slider.value = positionMs;
+        document.getElementById('currentTime').textContent = formatTime(positionMs);
+        document.getElementById('duration').textContent = formatTime(durationMs);
+      });
+    }
+  }
+
+  requestAnimationFrame(updateProgress);
+}
+
+updateProgress();
+
+// Événements de contrôle
+document.getElementById("searchBtn").addEventListener("click", async () => {
+  const query = document.getElementById("searchInput").value.trim();
+  if(!query) return;
+  const tracks = await searchTracks(query);
+  lastSearchTracks = tracks;
+  currentTrackIndex = -1;
+
+  const resultsEl = document.getElementById("results");
+  resultsEl.innerHTML = "";
+
+  tracks.forEach((track, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<img src="${track.album.images[2]?.url || ''}"><div class="track-info"><div class="track-name">${track.name}</div><div class="track-artists">${track.artists.map(a => a.name).join(', ')}</div></div>`;
+    li.addEventListener("click", () => playTrack(i));
+    resultsEl.appendChild(li);
+  });
+});
+
+document.getElementById("searchInput").addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("searchBtn").click(); });
+document.getElementById("playPauseBtn").addEventListener("click", () => { 
+  const audioEl = document.getElementById("playerAudio");
+  if(audioEl) audioEl.paused ? audioEl.play() : audioEl.pause();
+  if(player) player.togglePlay(); 
+});
+document.getElementById("nextBtn").addEventListener("click", () => { if(currentTrackIndex < lastSearchTracks.length -1) playTrack(currentTrackIndex+1); });
+document.getElementById("prevBtn").addEventListener("click", () => { if(currentTrackIndex >0) playTrack(currentTrackIndex-1); });
+
+const repeatBtn = document.getElementById("repeatBtn");
+repeatBtn.addEventListener("click", () => {
+  repeat = !repeat;
+  repeatBtn.classList.toggle("active", repeat);
+});
+
+const volumeSlider = document.getElementById("volumeSlider");
+const volumeIcon = document.getElementById("volumeIcon");
+volumeSlider.addEventListener("input", e => {
+  const vol = parseFloat(e.target.value);
+  const audioEl = document.getElementById("playerAudio");
+  if(audioEl) audioEl.volume = vol;
+  if(player) player.setVolume(vol);
+  volumeIcon.textContent = vol===0 ? "🔇" : vol<0.5 ? "🔉" : "🔊";
+});
+</script>
+
+</body>
+</html>
