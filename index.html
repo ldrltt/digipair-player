@@ -2,210 +2,247 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Spotify Player Modern</title>
+<title>Digipair Player</title>
 <style>
-  body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background: #121212;
-    color: #fff;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+:root {
+  --bg-color: #121212;
+  --text-color: #fff;
+  --primary-color: #1DB954;
+  --secondary-color: #b3b3b3;
+  --control-bg: rgba(30,30,30,0.95);
+  --hover-bg: #282828;
+  --repeat-color: red;
+}
+[data-theme="light"] {
+  --bg-color: #f2f2f2;
+  --text-color: #121212;
+  --primary-color: #1DB954;
+  --secondary-color: #555;
+  --control-bg: rgba(255,255,255,0.95);
+  --hover-bg: #ddd;
+  --repeat-color: red;
+}
 
-  h1 {
-    text-align: center;
-    margin: 20px 0;
-    color: #1DB954;
-    font-weight: 700;
-    font-size: 2em;
-  }
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
 
-  #searchSection {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-    padding: 0 10px;
-  }
+h1 {
+  text-align: center;
+  margin: 20px 0;
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 2em;
+}
 
-  #searchInput {
-    width: 300px;
-    padding: 10px 15px;
-    border-radius: 50px;
-    border: none;
-    outline: none;
-    font-size: 16px;
-  }
+#themeToggle {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: bold;
+  transition: 0.3s;
+}
+#themeToggle:hover { background: #1ed760; }
 
-  #searchBtn {
-    background: #1DB954;
-    border: none;
-    color: #fff;
-    padding: 10px 20px;
-    margin-left: 10px;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
+#searchSection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
+}
+#searchInput {
+  width: 300px;
+  padding: 10px 15px;
+  border-radius: 50px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  background: #333;
+  color: #fff;
+  transition: background 0.3s, color 0.3s;
+}
+[data-theme="light"] #searchInput {
+  background: #fff;
+  color: #121212;
+}
+#searchBtn {
+  background: var(--primary-color);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  margin-left: 10px;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+#searchBtn:hover { background: #1ed760; }
 
-  #searchBtn:hover { background: #1ed760; }
+#results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  padding: 0 10px 140px 10px;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 250px);
+}
+#results li {
+  background: var(--control-bg);
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+  gap: 15px;
+}
+#results li:hover { background: var(--hover-bg); transform: translateY(-2px); }
+#results img { width: 60px; height: 60px; border-radius: 6px; flex-shrink: 0; }
+.track-info { display: flex; flex-direction: column; justify-content: center; }
+.track-name { font-weight: 700; margin-bottom: 2px; font-size: 1em; }
+.track-artists { font-size: 0.9em; color: var(--secondary-color); }
 
-  #results {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 15px;
-    list-style: none;
-    padding: 0 10px;
-    flex-grow: 1;
-    overflow-y: auto;
-  }
+#playerControls {
+  background: var(--control-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 15px;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+  transition: background 0.3s;
+}
+#logoPlayer { font-weight: 700; color: var(--primary-color); margin-bottom: 5px; font-size: 1em; }
+#currentTrackDisplay { margin-bottom:5px; font-size:0.9em; color: var(--secondary-color); }
 
-  #results li {
-    background: #181818;
-    padding: 15px;
-    border-radius: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: 0.3s;
-    gap: 15px;
-  }
+#progressContainer {
+  width: 90%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#currentTime, #duration { font-size: 12px; width: 40px; text-align: center; }
 
-  #results li:hover {
-    background: #282828;
-    transform: translateY(-2px);
-  }
+#progressBar { flex-grow: 1; min-width: 0; }
+#progressBar input[type="range"] { width: 100%; cursor: pointer; }
 
-  #results img {
-    width: 70px;
-    height: 70px;
-    border-radius: 10px;
-  }
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+#controls button {
+  border: none;
+  color: #fff;
+  padding: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#playPauseBtn, #prevBtn, #nextBtn { background: var(--primary-color); }
+#playPauseBtn:hover, #prevBtn:hover, #nextBtn:hover { background: #1ed760; }
+#repeatBtn { background: var(--repeat-color); }
 
-  #results .track-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
+#volumeControl { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-shrink: 1; }
+#volumeIcon { font-size: 20px; cursor: pointer; }
+#volumeSlider { width: 120px; cursor: pointer; }
 
-  #results .track-name {
-    font-weight: 700;
-    margin-bottom: 5px;
-    font-size: 1.1em;
-  }
+/* Bouton paroles */
+#lyricsBtn {
+  background:#1DB954;
+  border:none;
+  color:#fff;
+  padding:8px 16px;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:bold;
+  transition:0.3s;
+  margin-left:10px;
+}
+#lyricsBtn:hover { background:#1ed760; }
 
-  #results .track-artists {
-    font-size: 0.9em;
-    color: #b3b3b3;
-  }
-
-  #playerControls {
-    background: rgba(30,30,30,0.95);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px 15px;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
-  }
-
-  #logoPlayer {
-    font-weight: 700;
-    color: #1DB954;
-    margin-bottom: 5px;
-    font-size: 1em;
-  }
-
-  #progressContainer {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  #currentTime, #duration {
-    font-size: 12px;
-    width: 40px;
-    text-align: center;
-  }
-
-  #progressBar {
-    flex-grow: 1;
-  }
-
-  #progressBar input[type="range"] {
-    width: 100%;
-    cursor: pointer;
-  }
-
-  #controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 10px;
-  }
-
-  #controls button {
-    background: #1DB954;
-    border: none;
-    color: #fff;
-    padding: 12px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 18px;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #controls button:hover { background: #1ed760; }
-
-  #repeatBtn.active {
-    background: #1ed760;
-  }
-
-  #volumeControl {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  #volumeIcon {
-    font-size: 20px;
-  }
-
-  #volumeSlider {
-    width: 120px;
-    cursor: pointer;
-  }
+/* Modal paroles */
+#lyricsModal {
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  background:rgba(0,0,0,0.95);
+  color:#fff;
+  padding:40px 20px;
+  overflow-y:auto;
+  z-index:9999;
+  box-sizing:border-box;
+}
+#closeLyrics {
+  position:absolute;
+  top:20px;
+  right:20px;
+  background:#ff4c4c;
+  border:none;
+  color:#fff;
+  padding:12px 20px;
+  cursor:pointer;
+  border-radius:8px;
+  font-size:16px;
+}
+#lyricsContent {
+  white-space:pre-wrap;
+  font-size:18px;
+  line-height:1.6;
+  max-width:800px;
+  margin:0 auto;
+  transition: 0.2s;
+}
 </style>
 <script src="https://sdk.scdn.co/spotify-player.js"></script>
 </head>
-<body>
+<body data-theme="dark">
 
-<h1>🎵 Spotify Player</h1>
+<h1>🎵 Digipair Player</h1>
+<button id="themeToggle">🌞</button>
 
 <div id="searchSection">
   <input type="text" id="searchInput" placeholder="Titre, artiste…">
   <button id="searchBtn">Rechercher</button>
+  <button id="lyricsBtn">🎤 Paroles</button>
 </div>
 
 <ul id="results"></ul>
 
 <div id="playerControls">
-  <div id="logoPlayer">digipair.ai</div>
+  <div id="logoPlayer">Digipair Player</div>
+  <div id="currentTrackDisplay">Aucun morceau en cours</div>
 
   <div id="progressContainer">
     <span id="currentTime">0:00</span>
-    <div id="progressBar">
-      <input type="range" min="0" max="100" value="0" id="progressSlider">
-    </div>
+    <div id="progressBar"><input type="range" min="0" max="100" value="0" id="progressSlider"></div>
     <span id="duration">0:00</span>
   </div>
 
@@ -222,20 +259,45 @@
   </div>
 </div>
 
-<script>
-let TOKEN = "BQBB0dIsWdMR7mu68i37yQrMjnCG13_vfvbJG5CnYKa3LSHy3yAg9aHsT17L2DN7EwE8mA7zKqRVkFKn-Vzt43OFVYQNjyynXE0XpNNj_tNGiutkt0x1jeLz0UTn5oa_-gaiZeRWFcavgavhvAzFrrSWKS4-dQWiBxrJI0DgN2MTEkSTKVVORQ_5zu6loxPD-w1-9UDkkTnd6-YO9m18rGf1xwUEO0ntQ9KUQ-CZuZglZJw"; // Remplace par ton token valide
+<!-- Modal Paroles -->
+<div id="lyricsModal">
+  <button id="closeLyrics">❌ Fermer</button>
+  <h2 id="lyricsTitle" style="text-align:center; margin-bottom:20px;"></h2>
+  <pre id="lyricsContent"></pre>
+</div>
 
-let player;
-let deviceId;
-let isPaused = true;
+<script>
+/* ---------------------- Thème clair/sombre ---------------------- */
+const themeToggle = document.getElementById("themeToggle");
+themeToggle.addEventListener("click", () => {
+  const body = document.body;
+  if (body.dataset.theme === "dark") {
+    body.dataset.theme = "light";
+    themeToggle.textContent = "🌙";
+  } else {
+    body.dataset.theme = "dark";
+    themeToggle.textContent = "🌞";
+  }
+});
+
+/* ---------------------- Token Spotify ---------------------- */
+async function getNewToken() {
+  const response = await fetch('/api/spotify/refresh-token');
+  if (!response.ok) throw new Error('Impossible de rafraîchir le token');
+  const data = await response.json();
+  return data.token;
+}
+
+let TOKEN = "BQB_wEZXgPQK1ufjN_jbhXc0_t9s2KbcjXD5zkBrYd6f2dmiTuIM_32W7bONYA7vcD-qDsjFsgZRGaPbKLMbnaYCdJK8SjvUxmfiC0sqfWcfo4zJ_YbuzR4kbFNMaS-7UWh44Dwng1HQVPpaZXVQv5YDLVsRG2YfqCpTQz_yW-Zs8kAXhIKkU5sA6tQj5mrH0c_LPxJ2KNMKDQ4Kw1M6jZeOPy8ncdu1fpzK4ZVyFnLcIeE"; // Remplace par ton token si nécessaire
+let player, deviceId, isPaused = true;
 let currentTrackIndex = -1;
 let lastSearchTracks = [];
 let repeat = false;
 
-// Spotify Web Playback SDK
-window.onSpotifyWebPlaybackSDKReady = () => {
+/* ---------------------- Initialisation du player ---------------------- */
+async function initPlayer() {
   player = new Spotify.Player({
-    name: "Web Player Site",
+    name: "Digipair Player",
     getOAuthToken: cb => { cb(TOKEN); },
     volume: 0.5
   });
@@ -247,151 +309,218 @@ window.onSpotifyWebPlaybackSDKReady = () => {
     document.getElementById('playPauseBtn').textContent = isPaused ? "▶️" : "⏸";
   });
 
-  player.connect();
-};
-
-// Format millisecondes → mm:ss
-function formatTime(ms) {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  await player.connect();
 }
 
-// Rechercher des pistes
+setInterval(async () => {
+  try {
+    const newToken = await getNewToken();
+    TOKEN = newToken;
+    if (player) { await player.disconnect(); await initPlayer(); }
+  } catch (e) { console.error(e); }
+}, 50*60*1000);
+
+window.onSpotifyWebPlaybackSDKReady = () => { initPlayer(); };
+
+/* ---------------------- Fonctions utilitaires ---------------------- */
+function formatTime(ms) {
+  const totalSeconds = Math.floor(ms/1000);
+  return `${Math.floor(totalSeconds/60)}:${(totalSeconds%60).toString().padStart(2,'0')}`;
+}
+
 async function searchTracks(query) {
-  const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10`,
-    { headers: { Authorization: `Bearer ${TOKEN}` } });
+  const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=50`, {
+    headers: { Authorization: `Bearer ${TOKEN}` }
+  });
   const data = await res.json();
   return data.tracks.items;
 }
 
-// Jouer une piste
 async function playTrack(index) {
-  if(index < 0 || index >= lastSearchTracks.length) return;
+  if (index<0 || index>=lastSearchTracks.length) return;
   currentTrackIndex = index;
   const track = lastSearchTracks[index];
 
-  if(track.preview_url) {
-    const audioEl = document.getElementById("playerAudio") || (() => {
-      const el = document.createElement("audio");
-      el.id = "playerAudio";
-      el.controls = false;
-      document.body.appendChild(el);
-      return el;
-    })();
+  document.getElementById("currentTrackDisplay").textContent = `${track.name} — ${track.artists.map(a=>a.name).join(', ')}`;
+
+  if(track.preview_url){
+    let audioEl = document.getElementById("playerAudio") || (()=>{ const el=document.createElement("audio"); el.id="playerAudio"; document.body.appendChild(el); return el; })();
     audioEl.src = track.preview_url;
     audioEl.play();
+    audioEl.onended = ()=>{ 
+      if(repeat){ audioEl.currentTime=0; audioEl.play(); }
+      else { currentTrackIndex=(currentTrackIndex+1)%lastSearchTracks.length; playTrack(currentTrackIndex); }
+    };
   } else {
     if(!deviceId) return alert("Le lecteur Spotify n'est pas prêt !");
-    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ uris: [track.uri] }),
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+    await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,{
+      method:'PUT',
+      body: JSON.stringify({uris:[track.uri]}),
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${TOKEN}`}
     });
-    isPaused = false;
-    document.getElementById('playPauseBtn').textContent = "⏸";
+    isPaused=false;
+    document.getElementById('playPauseBtn').textContent="⏸";
   }
 }
 
-// Synchronisation barre de temps et navigation
+/* ---------------------- Barre de progression ---------------------- */
 const progressSlider = document.getElementById("progressSlider");
-let isSliding = false;
+let isSliding=false;
+progressSlider.addEventListener("mousedown",()=>isSliding=true);
+progressSlider.addEventListener("touchstart",()=>isSliding=true);
+progressSlider.addEventListener("mouseup",async ()=>{isSliding=false; await seekTo(progressSlider.value);});
+progressSlider.addEventListener("touchend",async ()=>{isSliding=false; await seekTo(progressSlider.value);});
 
-progressSlider.addEventListener("mousedown", () => { isSliding = true; });
-progressSlider.addEventListener("touchstart", () => { isSliding = true; });
-
-progressSlider.addEventListener("mouseup", async () => {
-  isSliding = false;
-  await seekTo(progressSlider.value);
-});
-progressSlider.addEventListener("touchend", async () => {
-  isSliding = false;
-  await seekTo(progressSlider.value);
-});
-
-async function seekTo(valueMs) {
-  const audioEl = document.getElementById("playerAudio");
-  if(audioEl) {
-    audioEl.currentTime = valueMs / 1000;
-  } else if (player) {
-    await player.seek(valueMs);
-  }
+async function seekTo(valueMs){
+  const audioEl=document.getElementById("playerAudio");
+  if(audioEl) audioEl.currentTime=valueMs/1000;
+  else if(player) await player.seek(valueMs);
 }
 
-// Mise à jour continue de la barre
-function updateProgress() {
-  const audioEl = document.getElementById("playerAudio");
-  const slider = document.getElementById('progressSlider');
+function updateProgress(){
+  const audioEl=document.getElementById("playerAudio");
+  const slider=document.getElementById('progressSlider');
 
-  if(!isSliding) {
-    if(audioEl && !audioEl.paused) {
-      slider.max = audioEl.duration * 1000;
-      slider.value = audioEl.currentTime * 1000;
-      document.getElementById('currentTime').textContent = formatTime(audioEl.currentTime * 1000);
-      document.getElementById('duration').textContent = formatTime(audioEl.duration * 1000);
-    } else if (player) {
-      player.getCurrentState().then(state => {
+  if(!isSliding){
+    if(audioEl && !audioEl.paused){
+      slider.max=audioEl.duration*1000;
+      slider.value=audioEl.currentTime*1000;
+      document.getElementById('currentTime').textContent=formatTime(audioEl.currentTime*1000);
+      document.getElementById('duration').textContent=formatTime(audioEl.duration*1000);
+    } else if(player){
+      player.getCurrentState().then(state=>{
         if(!state) return;
-        const durationMs = state.duration;
-        const positionMs = state.position;
-        slider.max = durationMs;
-        slider.value = positionMs;
-        document.getElementById('currentTime').textContent = formatTime(positionMs);
-        document.getElementById('duration').textContent = formatTime(durationMs);
+        slider.max=state.duration;
+        slider.value=state.position;
+        document.getElementById('currentTime').textContent=formatTime(state.position);
+        document.getElementById('duration').textContent=formatTime(state.duration);
       });
     }
   }
-
   requestAnimationFrame(updateProgress);
 }
-
 updateProgress();
 
-// Événements de contrôle
-document.getElementById("searchBtn").addEventListener("click", async () => {
-  const query = document.getElementById("searchInput").value.trim();
+/* ---------------------- Contrôles ---------------------- */
+function togglePlayPause(){
+  const audioEl=document.getElementById("playerAudio");
+  if(audioEl) audioEl.paused?audioEl.play():audioEl.pause();
+  if(player) player.togglePlay();
+}
+
+document.getElementById("searchBtn").addEventListener("click", async ()=>{
+  const query=document.getElementById("searchInput").value.trim();
   if(!query) return;
-  const tracks = await searchTracks(query);
-  lastSearchTracks = tracks;
-  currentTrackIndex = -1;
+  const tracks=await searchTracks(query);
+  lastSearchTracks=tracks;
+  currentTrackIndex=-1;
 
-  const resultsEl = document.getElementById("results");
-  resultsEl.innerHTML = "";
-
-  tracks.forEach((track, i) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<img src="${track.album.images[2]?.url || ''}"><div class="track-info"><div class="track-name">${track.name}</div><div class="track-artists">${track.artists.map(a => a.name).join(', ')}</div></div>`;
-    li.addEventListener("click", () => playTrack(i));
+  const resultsEl=document.getElementById("results");
+  resultsEl.innerHTML="";
+  tracks.forEach((track,i)=>{
+    const li=document.createElement("li");
+    li.innerHTML=`<img src="${track.album.images[2]?.url||''}"><div class="track-info"><div class="track-name">${track.name}</div><div class="track-artists">${track.artists.map(a=>a.name).join(', ')}</div></div>`;
+    li.addEventListener("click",()=>playTrack(i));
     resultsEl.appendChild(li);
   });
 });
 
-document.getElementById("searchInput").addEventListener("keydown", e => { if(e.key==="Enter") document.getElementById("searchBtn").click(); });
-document.getElementById("playPauseBtn").addEventListener("click", () => { 
-  const audioEl = document.getElementById("playerAudio");
-  if(audioEl) audioEl.paused ? audioEl.play() : audioEl.pause();
-  if(player) player.togglePlay(); 
-});
-document.getElementById("nextBtn").addEventListener("click", () => { if(currentTrackIndex < lastSearchTracks.length -1) playTrack(currentTrackIndex+1); });
-document.getElementById("prevBtn").addEventListener("click", () => { if(currentTrackIndex >0) playTrack(currentTrackIndex-1); });
+document.getElementById("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter") document.getElementById("searchBtn").click();});
+document.getElementById("playPauseBtn").addEventListener("click",togglePlayPause);
+document.getElementById("nextBtn").addEventListener("click",()=>{if(currentTrackIndex<lastSearchTracks.length-1) playTrack(currentTrackIndex+1);});
+document.getElementById("prevBtn").addEventListener("click",()=>{if(currentTrackIndex>0) playTrack(currentTrackIndex-1);});
 
-const repeatBtn = document.getElementById("repeatBtn");
-repeatBtn.addEventListener("click", () => {
-  repeat = !repeat;
-  repeatBtn.classList.toggle("active", repeat);
-});
+/* ---------------------- Répétition ---------------------- */
+const repeatBtn=document.getElementById("repeatBtn");
+repeatBtn.addEventListener("click",()=>{repeat=!repeat; repeatBtn.style.background=repeat?"green":"red";});
+repeatBtn.style.background="red";
 
-const volumeSlider = document.getElementById("volumeSlider");
-const volumeIcon = document.getElementById("volumeIcon");
-volumeSlider.addEventListener("input", e => {
-  const vol = parseFloat(e.target.value);
-  const audioEl = document.getElementById("playerAudio");
-  if(audioEl) audioEl.volume = vol;
+/* ---------------------- Volume ---------------------- */
+const volumeSlider=document.getElementById("volumeSlider");
+const volumeIcon=document.getElementById("volumeIcon");
+let previousVolume=parseFloat(volumeSlider.value), isMuted=false;
+
+volumeSlider.addEventListener("input",e=>{
+  const vol=parseFloat(e.target.value);
+  const audioEl=document.getElementById("playerAudio");
+  if(audioEl) audioEl.volume=vol;
   if(player) player.setVolume(vol);
-  volumeIcon.textContent = vol===0 ? "🔇" : vol<0.5 ? "🔉" : "🔊";
-});
-</script>
 
+  volumeIcon.textContent=vol===0?"🔇":vol<0.5?"🔉":"🔊";
+  if(vol>0){isMuted=false; previousVolume=vol;} else isMuted=true;
+});
+
+volumeIcon.addEventListener("click",()=>{
+  const audioEl=document.getElementById("playerAudio");
+  if(!isMuted){
+    previousVolume=parseFloat(volumeSlider.value);
+    volumeSlider.value=0;
+    if(audioEl) audioEl.volume=0;
+    if(player) player.setVolume(0);
+    volumeIcon.textContent="🔇";
+    isMuted=true;
+  } else {
+    volumeSlider.value=previousVolume;
+    if(audioEl) audioEl.volume=previousVolume;
+    if(player) player.setVolume(previousVolume);
+    volumeIcon.textContent=previousVolume<0.5?"🔉":"🔊";
+    isMuted=false;
+  }
+});
+
+/* ---------------------- Paroles synchronisées améliorées ---------------------- */
+let syncedLyrics=[]; // {time,text}
+let currentLyricIndex=0;
+const lyricsModal=document.getElementById("lyricsModal");
+const lyricsContent=document.getElementById("lyricsContent");
+const lyricsTitle=document.getElementById("lyricsTitle");
+
+document.getElementById("lyricsBtn").addEventListener("click",async ()=>{
+  if(currentTrackIndex===-1) return alert("Pas de morceau en cours");
+  await fetchLyricsSync(lastSearchTracks[currentTrackIndex]);
+});
+
+document.getElementById("closeLyrics").addEventListener("click",()=>{lyricsModal.style.display="none";});
+
+async function fetchLyricsSync(track){
+  const artist = track.artists[0].name;
+  const title = track.name;
+  try{
+    const res = await fetch(`https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`);
+    const data = await res.json();
+    if(!data.lyrics) return alert("Paroles non disponibles !");
+    const lines = data.lyrics.split("\n").filter(l=>l.trim()!=="");
+    
+    const audioEl=document.getElementById("playerAudio");
+    let totalDuration=track.preview_url?(audioEl?.duration||30):30000; // durée par défaut 30s
+    const interval=totalDuration*1000/lines.length;
+    
+    syncedLyrics = lines.map((l,i)=>({time:i*interval,text:l}));
+    currentLyricIndex=0;
+
+    lyricsTitle.textContent=`${title} — ${artist}`;
+    lyricsContent.innerHTML=lines.map(l=>`<span style="color:#fff">${l}</span>`).join("<br>");
+    lyricsModal.style.display="block";
+
+    if(audioEl) updateLyricsScroll(audioEl);
+  }catch(e){console.error(e); alert("Erreur récupération paroles");}
+}
+
+function updateLyricsScroll(audioEl){
+  requestAnimationFrame(()=>{
+    const audio=document.getElementById("playerAudio");
+    if(!audio) return;
+    const currentTime=audio.currentTime*1000;
+    if(currentLyricIndex<syncedLyrics.length && currentTime>=syncedLyrics[currentLyricIndex].time){
+      const spans=lyricsContent.querySelectorAll("span");
+      spans.forEach(s=>s.style.color="#fff");
+      if(spans[currentLyricIndex]) spans[currentLyricIndex].style.color="#1DB954";
+      spans[currentLyricIndex]?.scrollIntoView({behavior:'smooth',block:'center'});
+      currentLyricIndex++;
+    }
+    if(currentLyricIndex<syncedLyrics.length) updateLyricsScroll(audio);
+  });
+}
+</script>
 </body>
 </html>
